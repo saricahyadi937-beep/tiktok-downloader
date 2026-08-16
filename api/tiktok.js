@@ -26,16 +26,24 @@ export default async function handler(req, res) {
     const data = await response.json();
     const resData = data.data;
 
+    // Fallback cover: jika cover kosong, pakai gambar pertama (untuk slide)
+    const cover = resData.cover 
+      ? 'https://www.tikwm.com' + resData.cover 
+      : (resData.images && resData.images.length > 0 
+          ? 'https://www.tikwm.com' + resData.images[0] 
+          : '');
+
     const result = {
-      title: resData.title,
-      cover: 'https://www.tikwm.com' + resData.cover,
-      duration: resData.duration,
+      title: resData.title || 'Tanpa Judul',
+      cover: cover,
+      duration: resData.duration || 0,
+      type: resData.duration > 0 ? 'video' : 'slide', // jika durasi > 0 maka video, selain itu slide
       video: {
         watermark: 'https://www.tikwm.com' + resData.wmplay,
         nowatermark: 'https://www.tikwm.com' + resData.play,
         hd: 'https://www.tikwm.com' + resData.hdplay,
       },
-      images: resData.images || [],
+      images: (resData.images || []).map(img => 'https://www.tikwm.com' + img),
       music: 'https://www.tikwm.com' + resData.music,
       stats: {
         views: resData.play_count,
@@ -45,7 +53,7 @@ export default async function handler(req, res) {
         downloads: resData.download_count,
       },
       author: {
-        name: resData.author.nickname,
+        name: resData.author.nickname || 'Unknown',
         avatar: 'https://www.tikwm.com' + resData.author.avatar,
       }
     };
