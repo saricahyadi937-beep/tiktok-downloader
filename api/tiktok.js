@@ -68,4 +68,38 @@ export default async function handler(req, res) {
     console.error(error);
     res.status(500).json({ error: 'Gagal memproses URL TikTok' });
   }
+}    const avatar = resData.author.avatar 
+      ? 'https://www.tikwm.com' + resData.author.avatar 
+      : 'https://via.placeholder.com/150x150?text=No+Avatar';
+
+    const result = {
+      title: resData.title || 'Tanpa Judul',
+      cover: cover,
+      duration: resData.duration || 0,
+      type: resData.duration > 0 ? 'video' : 'slide',
+      video: {
+        watermark: 'https://www.tikwm.com' + resData.wmplay,
+        nowatermark: 'https://www.tikwm.com' + resData.play,
+        hd: 'https://www.tikwm.com' + resData.hdplay, // HD 1080p
+      },
+      images: (resData.images || []).map(img => 'https://www.tikwm.com' + img),
+      music: 'https://www.tikwm.com' + resData.music,
+      stats: {
+        views: resData.play_count,
+        likes: resData.digg_count,
+        comments: resData.comment_count,
+        shares: resData.share_count,
+        downloads: resData.download_count,
+      },
+      author: {
+        name: resData.author.nickname || 'Unknown',
+        avatar: avatar,
+      }
+    };
+
+    res.status(200).json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Gagal memproses URL TikTok' });
+  }
 }
