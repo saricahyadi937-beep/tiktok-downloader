@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>TikTok Downloader</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    .input-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    input {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+    button {
+      padding: 12px 20px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    #result {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    #result img {
+      max-width: 100%;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
+    .image-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .image-grid img {
+      width: 100%;
+      height: auto;
+      border-radius: 5px;
+    }
+    a {
+      display: inline-block;
+      margin: 5px 0;
+      padding: 8px 12px;
+      background: #28a745;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+    a:hover {
+      background: #218838;
+    }
+    .author {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .author img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+  <h1>TikTok Downloader</h1>
+  <div class="input-group">
+    <input type="text" id="url" placeholder="Tempel URL TikTok...">
+    <button onclick="download()">Download</button>
+  </div>
+  <div id="result"></div>
+
+  <script>
+    async function download() {
+      const url = document.getElementById('url').value.trim();
+      if (!url) {
+        alert('Masukkan URL TikTok terlebih dahulu');
+        return;
+      }
+
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = '<p>Memproses...</p>';
+
+      try {
+        const res = await fetch('/api/tiktok', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url })
+        });
+        const data = await res.json();
+
+        if (data.error) {
+          resultDiv.innerHTML = `<p style="color:red">${data.error}</p>`;
+          return;
+        }
+
+        let html = '';
+        // Tampilkan info author
+        if (data.author) {
+          html += `<div class="author">
+            <img src="${data.author.avatar}" alt="avatar">
+            <span>${data.author.name}</span>
+          </div>`;
+        }
+
+        // Jika slide foto (carousel)
+        if (data.images && data.images.length > 0) {
+          let imagesHtml = '';
+          data.images.forEach(img => {
+            imagesHtml += `<img src="${img}" alt="slide">`;
+          });
+          html += `<p><strong>${data.title || 'Slide Foto'}</strong></p>`;
+          html += `<div class="image-grid">${imagesHtml}</div>`;
+          html += `<a href="${data.music}" target="_blank">Download Musik</a>`;
+        } else {
+          // Video
+          html += `<p><strong>${data.title || 'Video TikTok'}</strong></p>`;
+          html += `<img src="${data.cover}" alt="cover">`;
+          html += `<p>Durasi: ${data.duration} detik</p>`;
+          html += `<a href="${data.video.nowatermark}" target="_blank">Download No Watermark</a><br>`;
+          html += `<a href="${data.video.hd}" target="_blank">Download HD</a><br>`;
+          html += `<a href="${data.music}" target="_blank">Download Musik</a>`;
+        }
+
+        // Tampilkan statistik
+        if (data.stats) {
+          html += `<p style="margin-top:10px; font-size:14px; color:#666">
+            Views: ${data.stats.views} | Likes: ${data.stats.likes} | Comments: ${data.stats.comments}
+          </p>`;
+        }
+
+        resultDiv.innerHTML = html;
+      } catch (error) {
+        console.error(error);
+        resultDiv.innerHTML = '<p style="color:red">Terjadi kesalahan, coba lagi nanti.</p>';
+      }
+    }
+  </script>
+</body>
+</html>
