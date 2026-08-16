@@ -368,18 +368,17 @@
       html += '<div class="download-buttons">';
       if (data.type === 'video') {
         // PAKSA HD: langsung pakai link HD
-        const hdLink = data.video.hd; // sudah hdplay
-        const fileName = getDownloadFileName(data);
-        html += `<a href="${hdLink}" download="${fileName}" target="_blank" class="btn-download">⬇ Download Video HD</a>`;
+        const hdLink = data.video.hd;
+        html += `<a href="${hdLink}" target="_blank" class="btn-download">⬇ Download Video HD</a>`;
       } else {
         // Slide: tombol musik
         if (data.music) {
-          html += `<a href="${data.music}" download="${getMusicFileName(data)}" target="_blank" class="btn-download btn-music">🎵 Download Musik</a>`;
+          html += `<a href="${data.music}" target="_blank" class="btn-download btn-music">🎵 Download Musik</a>`;
         }
       }
       // Musik untuk video
       if (data.type === 'video' && data.music) {
-        html += `<a href="${data.music}" download="${getMusicFileName(data)}" target="_blank" class="btn-download btn-music">🎵 Download Musik</a>`;
+        html += `<a href="${data.music}" target="_blank" class="btn-download btn-music">🎵 Download Musik</a>`;
       }
       html += '</div>';
 
@@ -396,24 +395,6 @@
       const div = document.createElement('div');
       div.textContent = text;
       return div.innerHTML;
-    }
-
-    function sanitizeFileName(name) {
-      return name.replace(/[\\/:*?"<>|]/g, '').trim().replace(/\s+/g, '_').slice(0, 80);
-    }
-
-    function getDownloadFileName(data) {
-      const base = data.title && data.title !== 'Tanpa Judul' 
-        ? sanitizeFileName(data.title) 
-        : `TikTok_${Date.now()}`;
-      return `${base}.mp4`;
-    }
-
-    function getMusicFileName(data) {
-      const base = data.title && data.title !== 'Tanpa Judul' 
-        ? sanitizeFileName(data.title) 
-        : `TikTok_${Date.now()}`;
-      return `${base}_music.mp3`;
     }
   </script>
 </body>
