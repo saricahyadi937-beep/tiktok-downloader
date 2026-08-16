@@ -26,22 +26,27 @@ export default async function handler(req, res) {
     const data = await response.json();
     const resData = data.data;
 
-    // Fallback cover: jika cover kosong, pakai gambar pertama (untuk slide)
+    // Fallback cover jika kosong
     const cover = resData.cover 
       ? 'https://www.tikwm.com' + resData.cover 
       : (resData.images && resData.images.length > 0 
           ? 'https://www.tikwm.com' + resData.images[0] 
           : '');
 
+    // Fallback avatar jika kosong/null
+    const avatar = resData.author.avatar 
+      ? 'https://www.tikwm.com' + resData.author.avatar 
+      : 'https://via.placeholder.com/150x150?text=No+Avatar';
+
     const result = {
       title: resData.title || 'Tanpa Judul',
       cover: cover,
       duration: resData.duration || 0,
-      type: resData.duration > 0 ? 'video' : 'slide', // jika durasi > 0 maka video, selain itu slide
+      type: resData.duration > 0 ? 'video' : 'slide',
       video: {
         watermark: 'https://www.tikwm.com' + resData.wmplay,
         nowatermark: 'https://www.tikwm.com' + resData.play,
-        hd: 'https://www.tikwm.com' + resData.hdplay,
+        hd: 'https://www.tikwm.com' + resData.hdplay, // HD 1080p
       },
       images: (resData.images || []).map(img => 'https://www.tikwm.com' + img),
       music: 'https://www.tikwm.com' + resData.music,
@@ -54,7 +59,7 @@ export default async function handler(req, res) {
       },
       author: {
         name: resData.author.nickname || 'Unknown',
-        avatar: 'https://www.tikwm.com' + resData.author.avatar,
+        avatar: avatar,
       }
     };
 
