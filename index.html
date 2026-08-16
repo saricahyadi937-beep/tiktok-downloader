@@ -114,6 +114,7 @@
       height: 45px;
       border-radius: 50%;
       border: 2px solid #fe2c55;
+      object-fit: cover;
     }
     .author-info {
       display: flex;
@@ -192,6 +193,7 @@
       font-weight: bold;
       font-size: 14px;
       transition: all 0.3s;
+      cursor: pointer;
     }
     .btn-download:hover {
       background: #e0244f;
@@ -254,13 +256,11 @@
     const resultDiv = document.getElementById('result');
     let debounceTimer;
 
-    // Event saat user mengetik atau paste
     urlInput.addEventListener('input', () => {
       clearTimeout(debounceTimer);
       const url = urlInput.value.trim();
       if (url) {
         btnDownload.disabled = false;
-        // Auto preview setelah 800ms berhenti mengetik
         debounceTimer = setTimeout(() => {
           processUrl();
         }, 800);
@@ -270,7 +270,6 @@
       }
     });
 
-    // Event khusus paste langsung
     urlInput.addEventListener('paste', () => {
       setTimeout(() => {
         const url = urlInput.value.trim();
@@ -288,7 +287,6 @@
         return;
       }
 
-      // Tampilkan loading
       resultDiv.innerHTML = `
         <div class="loading">
           <div class="spinner"></div>
@@ -326,7 +324,7 @@
       // Author
       html += `
         <div class="author">
-          <img src="${data.author.avatar}" onerror="this.src='https://via.placeholder.com/45x45?text=?'">
+          <img src="${data.author.avatar}" onerror="this.src='https://via.placeholder.com/150x150?text=No+Avatar'">
           <div class="author-info">
             <span class="author-name">${data.author.name}</span>
             <span class="author-username">@${data.author.name}</span>
@@ -334,7 +332,7 @@
         </div>
       `;
 
-      // Judul
+      // Title
       html += `<div class="title">${escapeHtml(data.title)}</div>`;
 
       // Cover / thumbnail
@@ -345,7 +343,7 @@
         </div>
       `;
 
-      // Jika slide foto
+      // Slide
       if (data.type === 'slide' && data.images && data.images.length > 0) {
         let imagesHtml = '';
         data.images.forEach(img => {
@@ -366,21 +364,22 @@
         `;
       }
 
-      // Tombol download
+      // Download buttons
       html += '<div class="download-buttons">';
       if (data.type === 'video') {
         // PAKSA HD: langsung pakai link HD
-        const hdLink = data.video.hd || data.video.nowatermark; // fallback kalau HD kosong
-        html += `<a href="${hdLink}" target="_blank" class="btn-download">⬇ Download Video HD</a>`;
+        const hdLink = data.video.hd; // sudah hdplay
+        const fileName = getDownloadFileName(data);
+        html += `<a href="${hdLink}" download="${fileName}" target="_blank" class="btn-download">⬇ Download Video HD</a>`;
       } else {
-        // Slide: tombol download musik
+        // Slide: tombol musik
         if (data.music) {
-          html += `<a href="${data.music}" target="_blank" class="btn-download btn-music">🎵 Download Musik</a>`;
+          html += `<a href="${data.music}" download="${getMusicFileName(data)}" target="_blank" class="btn-download btn-music">🎵 Download Musik</a>`;
         }
       }
-      // Tambahkan tombol musik untuk video juga
+      // Musik untuk video
       if (data.type === 'video' && data.music) {
-        html += `<a href="${data.music}" target="_blank" class="btn-download btn-music">🎵 Download Musik</a>`;
+        html += `<a href="${data.music}" download="${getMusicFileName(data)}" target="_blank" class="btn-download btn-music">🎵 Download Musik</a>`;
       }
       html += '</div>';
 
@@ -397,6 +396,24 @@
       const div = document.createElement('div');
       div.textContent = text;
       return div.innerHTML;
+    }
+
+    function sanitizeFileName(name) {
+      return name.replace(/[\\/:*?"<>|]/g, '').trim().replace(/\s+/g, '_').slice(0, 80);
+    }
+
+    function getDownloadFileName(data) {
+      const base = data.title && data.title !== 'Tanpa Judul' 
+        ? sanitizeFileName(data.title) 
+        : `TikTok_${Date.now()}`;
+      return `${base}.mp4`;
+    }
+
+    function getMusicFileName(data) {
+      const base = data.title && data.title !== 'Tanpa Judul' 
+        ? sanitizeFileName(data.title) 
+        : `TikTok_${Date.now()}`;
+      return `${base}_music.mp3`;
     }
   </script>
 </body>
